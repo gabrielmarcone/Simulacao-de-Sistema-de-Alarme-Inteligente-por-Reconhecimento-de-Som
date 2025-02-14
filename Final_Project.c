@@ -4,6 +4,7 @@
 #include "hardware/pio.h"
 #include "hardware/timer.h"
 #include "hardware/adc.h"
+#include "hardware/pwm.h"
 #include "ws2812.pio.h"
 
 int main() {

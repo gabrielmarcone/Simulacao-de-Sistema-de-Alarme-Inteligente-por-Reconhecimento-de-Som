@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(Final_Project Final_Project.c )
+add_executable(Final_Project Final_Project.c lib/ssd1306.c)
 
 pico_set_program_name(Final_Project "Final_Project")
 pico_set_program_version(Final_Project "0.1")
@@ -62,6 +62,7 @@ target_link_libraries(Final_Project
         hardware_pio
         hardware_timer
         hardware_adc
+        hardware_pwm
         )
 
 pico_add_extra_outputs(Final_Project)
