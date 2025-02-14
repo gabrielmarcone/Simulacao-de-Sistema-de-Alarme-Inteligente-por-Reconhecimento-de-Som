@@ -60,7 +60,8 @@ target_include_directories(Final_Project PRIVATE
 target_link_libraries(Final_Project 
         hardware_i2c
         hardware_pio
-        hardware_timer     
+        hardware_timer
+        hardware_adc
         )
 
 pico_add_extra_outputs(Final_Project)

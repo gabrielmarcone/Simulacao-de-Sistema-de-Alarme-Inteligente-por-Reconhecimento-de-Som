@@ -3,6 +3,7 @@
 #include "hardware/i2c.h"
 #include "hardware/pio.h"
 #include "hardware/timer.h"
+#include "hardware/adc.h"
 #include "ws2812.pio.h"
 
 int main() {
