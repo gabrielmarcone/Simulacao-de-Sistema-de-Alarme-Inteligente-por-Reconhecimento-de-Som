@@ -33,8 +33,45 @@
 #define I2C_SCL 15 // Pino para SCL
 #define SSD1306_ADDR 0x3C // Endereço do display OLED
 
+// Função para iniciar os pinos GPIO
+void init_gpio() {
+    // Inicializando os pinos dos LEDs
+    gpio_init(LED_GREEN);
+    gpio_set_dir(LED_GREEN, GPIO_OUT);
+    gpio_init(LED_BLUE);
+    gpio_set_dir(LED_BLUE, GPIO_OUT);
+    gpio_init(LED_RED);
+    gpio_set_dir(LED_RED, GPIO_OUT);
+
+    // Inicializando os pinos dos botões
+    gpio_init(BUTTON_A);
+    gpio_set_dir(BUTTON_A, GPIO_IN);
+    gpio_pull_up(BUTTON_A);
+    gpio_init(BUTTON_B);
+    gpio_set_dir(BUTTON_B, GPIO_IN);
+    gpio_pull_up(BUTTON_B);
+
+    // Inicializando os pinos dos buzzers
+    gpio_init(BUZZER_A);
+    gpio_set_dir(BUZZER_A, GPIO_OUT);
+    gpio_init(BUZZER_B);
+    gpio_set_dir(BUZZER_B, GPIO_OUT);
+
+    // Inicializa as funções ADC
+    adc_init();
+    adc_gpio_init(MIC_PIN);
+
+    // Inicialização do I2C
+    i2c_init(I2C_PORT, 400 * 1000);
+    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C); // Define a função do pino GPIO para I2C
+    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C); // Define a função do pino GPIO para I2C
+    gpio_pull_up(I2C_SDA); // Resistor de pull-up para o pino de dados
+    gpio_pull_up(I2C_SCL); // Resistor de pull-up para o pino de clock
+}
+
 int main() {
     stdio_init_all();
+    init_gpio();
 
     while (true) {
         printf("Hello, world!\n");
