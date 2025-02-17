@@ -33,6 +33,9 @@
 #define I2C_SCL 15 // Pino para SCL
 #define SSD1306_ADDR 0x3C // Endereço do display OLED
 
+// Variável limite para o microfone
+#define MIC_LIMIT 2500
+
 // Função para iniciar os pinos GPIO
 void init_gpio() {
     // Inicializando os pinos dos LEDs
@@ -74,7 +77,19 @@ int main() {
     init_gpio();
 
     while (true) {
-        printf("Hello, world!\n");
-        sleep_ms(1000);
+        adc_select_input(2); // Seleciona o ADC para o microfone. O pino 28 como entrada analógica
+        uint16_t mic_value = adc_read();
+        printf("Microphone: %d\n", mic_value);
+
+        if (mic_value > MIC_LIMIT) {
+            gpio_put(LED_GREEN, 1);
+            gpio_put(LED_BLUE, 1);
+            gpio_put(LED_RED, 1);
+            sleep_ms(1000);
+        } else {
+            gpio_put(LED_GREEN, 0);
+            gpio_put(LED_BLUE, 0);
+            gpio_put(LED_RED, 0);
+        }
     }
 }
