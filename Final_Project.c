@@ -35,7 +35,7 @@
 #define SSD1306_ADDR 0x3C // Endereço do display OLED
 
 // Variável limite para o microfone
-#define MIC_LIMIT 2800
+#define MIC_LIMIT 3000
 
 // Variáveis para controle de PWM
 #define PWM_DIVISER 30.0 // Divisor de clock para PWM
@@ -48,6 +48,8 @@ volatile bool pwm_enabled = false; // Estado do PWM (se ativado ou não)
 // Estado dos botões
 volatile uint32_t last_press_time_A = 0;
 volatile uint32_t last_press_time_B = 0;
+
+volatile bool alarm_triggered = false; // Estado do alarme (se disparado ou não)
 
 // Função para iniciar os pinos GPIO
 void init_gpio() {
@@ -100,6 +102,20 @@ void pwm_setup() {
     pwm_set_clkdiv(slice_led_red, PWM_DIVISER);
     pwm_set_wrap(slice_led_red, WRAP_VALUE);
     pwm_set_enabled(slice_led_red, true);
+
+    // Configura o PWM para o Buzzer A
+    gpio_set_function(BUZZER_A, GPIO_FUNC_PWM);
+    uint slice_buzzer_A = pwm_gpio_to_slice_num(BUZZER_A);
+    pwm_set_clkdiv(slice_buzzer_A, PWM_DIVISER);
+    pwm_set_wrap(slice_buzzer_A, WRAP_VALUE);
+    pwm_set_enabled(slice_buzzer_A, true);
+
+    // Configura o PWM para o Buzzer B
+    gpio_set_function(BUZZER_B, GPIO_FUNC_PWM);
+    uint slice_buzzer_B = pwm_gpio_to_slice_num(BUZZER_B);
+    pwm_set_clkdiv(slice_buzzer_B, PWM_DIVISER);
+    pwm_set_wrap(slice_buzzer_B, WRAP_VALUE);
+    pwm_set_enabled(slice_buzzer_B, true);
 }
 
 // Função para definir brilho dos LEDs com base no microfone (somente se o PWM estiver ativado)
@@ -111,9 +127,45 @@ void set_led_intensity(uint16_t mic_value) {
         pwm_set_gpio_level(LED_GREEN, intensity);
         pwm_set_gpio_level(LED_RED, intensity);
     } else {
-        // Se o PWM estiver desativado, mantém os LEDs apagados
-        pwm_set_gpio_level(LED_GREEN, 0);
+        // Se o PWM estiver desativado, mantém o led verde aceso e o vermelho apagado
+        pwm_set_gpio_level(LED_GREEN, WRAP_VALUE);
         pwm_set_gpio_level(LED_RED, 0);
+    }
+}
+
+void play_siren() {
+    alarm_triggered = true;
+    while (alarm_triggered) {
+        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 2);
+        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 2);
+        sleep_ms(100);
+        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 4);
+        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 4);
+        sleep_ms(100);
+        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 6);
+        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 6);
+        sleep_ms(100);
+        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 8);
+        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 8);
+        sleep_ms(100);
+        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 10);
+        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 10);
+        sleep_ms(100);
+        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 8);
+        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 8);
+        sleep_ms(100);
+        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 6);
+        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 6);
+        sleep_ms(100);
+        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 4);
+        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 4);
+        sleep_ms(100);
+        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 2);
+        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 2);
+        sleep_ms(100);
+        pwm_set_gpio_level(BUZZER_A, 0);
+        pwm_set_gpio_level(BUZZER_B, 0);
+        sleep_ms(100);
     }
 }
 
@@ -121,7 +173,7 @@ void set_led_intensity(uint16_t mic_value) {
 void button_irq_handler(uint gpio, uint32_t events) {
     uint32_t current_time = to_us_since_boot(get_absolute_time());
 
-    if (gpio == BUTTON_A) { // Aciona os LEDs Vermelho e azul por PWM
+    if (gpio == BUTTON_A) { // Aciona/Desliga o sistema de Alarme
         if (current_time - last_press_time_A > DEBOUNCE_TIME * 1000) { // Debounce
             last_press_time_A = current_time;  // Atualiza o tempo da última pressão
 
@@ -129,10 +181,14 @@ void button_irq_handler(uint gpio, uint32_t events) {
             printf("Botão A pressionado. Sistema Ativo: %d\n", pwm_enabled);
         }
     } 
-    else if (gpio == BUTTON_B) { // Liga/Desliga o LED Verde e controla a borda do display
+    else if (gpio == BUTTON_B) { // Desliga o alarme depois que foi disparado
         if (current_time - last_press_time_B > DEBOUNCE_TIME * 1000) { // Debounce
             last_press_time_B = current_time;  // Atualiza o tempo da última pressão
-
+            if (alarm_triggered) {
+                alarm_triggered = false; // Desativa o alarme
+                pwm_set_gpio_level(BUZZER_A, 0);
+                pwm_set_gpio_level(BUZZER_B, 0);
+            }
         }
     }
 }
@@ -151,17 +207,13 @@ int main() {
         uint16_t mic_value = adc_read(); // Lê o valor ADC no microfone
         printf("Microphone: %d\n", mic_value);
 
-        if ((mic_value > MIC_LIMIT) && pwm_enabled) {
-            gpio_put(LED_GREEN, 1);
+        if ((mic_value > MIC_LIMIT) && pwm_enabled && !alarm_triggered) {
+            pwm_set_gpio_level(LED_GREEN, WRAP_VALUE);
             gpio_put(LED_BLUE, 1);
-            gpio_put(LED_RED, 1);
-            gpio_put(BUZZER_A, 1);
-            gpio_put(BUZZER_B, 1);
-            sleep_ms(2000);
+            pwm_set_gpio_level(LED_RED, WRAP_VALUE);
+            play_siren();
             gpio_put(LED_BLUE, 0);
-            gpio_put(BUZZER_A, 0);
-            gpio_put(BUZZER_B, 0);
-        } else {
+        } else if (!alarm_triggered) {
             set_led_intensity(mic_value);
         }
     }
