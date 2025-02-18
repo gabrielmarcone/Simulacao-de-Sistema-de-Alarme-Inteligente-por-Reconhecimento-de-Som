@@ -135,37 +135,20 @@ void set_led_intensity(uint16_t mic_value) {
 
 void play_siren() {
     alarm_triggered = true;
+    const uint16_t levels[] = {WRAP_VALUE, 3000, 2000, 1000, 500, 1000, 2000, 3000, WRAP_VALUE, 0};
+    const uint16_t buzz_levels[] = {WRAP_VALUE / 2, WRAP_VALUE / 4, WRAP_VALUE / 6, WRAP_VALUE / 8,
+                                    WRAP_VALUE / 10, WRAP_VALUE / 8, WRAP_VALUE / 6, WRAP_VALUE / 4,
+                                    WRAP_VALUE / 2, 0};
+
+    pwm_set_gpio_level(LED_GREEN, 0);
+
     while (alarm_triggered) {
-        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 2);
-        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 2);
-        sleep_ms(100);
-        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 4);
-        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 4);
-        sleep_ms(100);
-        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 6);
-        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 6);
-        sleep_ms(100);
-        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 8);
-        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 8);
-        sleep_ms(100);
-        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 10);
-        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 10);
-        sleep_ms(100);
-        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 8);
-        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 8);
-        sleep_ms(100);
-        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 6);
-        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 6);
-        sleep_ms(100);
-        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 4);
-        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 4);
-        sleep_ms(100);
-        pwm_set_gpio_level(BUZZER_A, WRAP_VALUE / 2);
-        pwm_set_gpio_level(BUZZER_B, WRAP_VALUE / 2);
-        sleep_ms(100);
-        pwm_set_gpio_level(BUZZER_A, 0);
-        pwm_set_gpio_level(BUZZER_B, 0);
-        sleep_ms(100);
+        for (int i = 0; i < 10 && alarm_triggered; i++) {
+            pwm_set_gpio_level(BUZZER_A, buzz_levels[i]);
+            pwm_set_gpio_level(BUZZER_B, buzz_levels[i]);
+            pwm_set_gpio_level(LED_RED, levels[i]);
+            sleep_ms(50);
+        }
     }
 }
 
@@ -186,6 +169,7 @@ void button_irq_handler(uint gpio, uint32_t events) {
             last_press_time_B = current_time;  // Atualiza o tempo da última pressão
             if (alarm_triggered) {
                 alarm_triggered = false; // Desativa o alarme
+                pwm_set_gpio_level(LED_RED, 0);
                 pwm_set_gpio_level(BUZZER_A, 0);
                 pwm_set_gpio_level(BUZZER_B, 0);
             }
@@ -208,11 +192,7 @@ int main() {
         printf("Microphone: %d\n", mic_value);
 
         if ((mic_value > MIC_LIMIT) && pwm_enabled && !alarm_triggered) {
-            pwm_set_gpio_level(LED_GREEN, WRAP_VALUE);
-            gpio_put(LED_BLUE, 1);
-            pwm_set_gpio_level(LED_RED, WRAP_VALUE);
             play_siren();
-            gpio_put(LED_BLUE, 0);
         } else if (!alarm_triggered) {
             set_led_intensity(mic_value);
         }
