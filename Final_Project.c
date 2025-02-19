@@ -7,6 +7,8 @@
 #include "hardware/adc.h"
 #include "hardware/pwm.h"
 #include "ws2812.pio.h"
+#include "lib/ssd1306.h"
+#include "lib/font.h"
 
 // Definindo os pinos dos LEDs
 #define LED_GREEN 11
@@ -33,6 +35,7 @@
 #define I2C_SDA 14 // Pino para SDA
 #define I2C_SCL 15 // Pino para SCL
 #define SSD1306_ADDR 0x3C // Endereço do display OLED
+ssd1306_t ssd; // Estrutura para o display OLED
 
 // Variável limite para o microfone
 #define MIC_LIMIT 3000
@@ -50,6 +53,9 @@ volatile uint32_t last_press_time_A = 0;
 volatile uint32_t last_press_time_B = 0;
 
 volatile bool alarm_triggered = false; // Estado do alarme (se disparado ou não)
+
+uint16_t last_mic_value = 0; // Variável para armazenar a última leitura do microfone
+
 
 // Função para iniciar os pinos GPIO
 void init_gpio() {
@@ -133,8 +139,29 @@ void set_led_intensity(uint16_t mic_value) {
     }
 }
 
+void update_display() {
+    char mic_value_str[16];
+    snprintf(mic_value_str, sizeof(mic_value_str), "MIC: %d", last_mic_value);
+
+    ssd1306_fill(&ssd, false);
+    ssd1306_draw_string(&ssd, "SYSTEM STATUS:", 8, 5);
+    ssd1306_draw_string(&ssd, "---------------", 4, 12);
+    if (alarm_triggered) {
+        ssd1306_draw_string(&ssd, "ALARME", 37, 30);
+        ssd1306_draw_string(&ssd, "DISPARADO!", 26, 40);
+    } else if (pwm_enabled) {
+        ssd1306_draw_string(&ssd, "ALARME: ON", 20, 30);
+        ssd1306_draw_string(&ssd, "---------------", 4, 45);
+        ssd1306_draw_string(&ssd, mic_value_str, 25, 55);
+    } else {
+        ssd1306_draw_string(&ssd, "ALARME: OFF", 20, 30);
+    }
+    ssd1306_send_data(&ssd);
+}
+
 void play_siren() {
     alarm_triggered = true;
+    update_display();
     const uint16_t levels[] = {WRAP_VALUE, 3000, 2000, 1000, 500, 1000, 2000, 3000, WRAP_VALUE, 0};
     const uint16_t buzz_levels[] = {WRAP_VALUE / 2, WRAP_VALUE / 4, WRAP_VALUE / 6, WRAP_VALUE / 8,
                                     WRAP_VALUE / 10, WRAP_VALUE / 8, WRAP_VALUE / 6, WRAP_VALUE / 4,
@@ -161,6 +188,7 @@ void button_irq_handler(uint gpio, uint32_t events) {
             last_press_time_A = current_time;  // Atualiza o tempo da última pressão
 
             pwm_enabled = !pwm_enabled; // Alterna o estado do PWM
+            update_display();
             printf("Botão A pressionado. Sistema Ativo: %d\n", pwm_enabled);
         }
     } 
@@ -172,6 +200,7 @@ void button_irq_handler(uint gpio, uint32_t events) {
                 pwm_set_gpio_level(LED_RED, 0);
                 pwm_set_gpio_level(BUZZER_A, 0);
                 pwm_set_gpio_level(BUZZER_B, 0);
+                update_display();
             }
         }
     }
@@ -182,19 +211,29 @@ int main() {
     init_gpio();
     pwm_setup();
 
+    // Inicializa a estrutura do display
+    ssd1306_init(&ssd, WIDTH, HEIGHT, false, SSD1306_ADDR, I2C_PORT); // Inicializa o display
+    ssd1306_config(&ssd); // Configura o display
+    ssd1306_send_data(&ssd); // Envia os dados para o display
+
+    // Limpa o display. O display inicia com todos os pixels apagados.
+    ssd1306_fill(&ssd, false);
+    ssd1306_send_data(&ssd);
+    update_display();
+
     // Configura as interrupções para os botões
     gpio_set_irq_enabled_with_callback(BUTTON_A, GPIO_IRQ_EDGE_FALL, true, &button_irq_handler);
     gpio_set_irq_enabled_with_callback(BUTTON_B, GPIO_IRQ_EDGE_FALL, true, &button_irq_handler);
 
     while (true) {
         adc_select_input(2); // Seleciona o ADC para o microfone. O pino 28 como entrada analógica
-        uint16_t mic_value = adc_read(); // Lê o valor ADC no microfone
-        printf("Microphone: %d\n", mic_value);
+        last_mic_value = adc_read(); // Lê o valor ADC no microfone
+        printf("Microphone: %d\n", last_mic_value);
 
-        if ((mic_value > MIC_LIMIT) && pwm_enabled && !alarm_triggered) {
+        if ((last_mic_value > MIC_LIMIT) && pwm_enabled) {
             play_siren();
         } else if (!alarm_triggered) {
-            set_led_intensity(mic_value);
+            set_led_intensity(last_mic_value);
         }
     }
 }
