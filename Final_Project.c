@@ -9,6 +9,7 @@
 #include "ws2812.pio.h"
 #include "lib/ssd1306.h"
 #include "lib/font.h"
+#include "animations.h"
 
 // Definindo os pinos dos LEDs
 #define LED_GREEN 11
@@ -37,6 +38,10 @@
 #define SSD1306_ADDR 0x3C // Endereço do display OLED
 ssd1306_t ssd; // Estrutura para o display OLED
 
+// Variáveis globais para o controle PIO
+static PIO  pio = pio0;
+static uint sm  = 0;
+
 // Variável limite para o microfone
 #define MIC_LIMIT 3000
 
@@ -55,7 +60,6 @@ volatile uint32_t last_press_time_B = 0;
 volatile bool alarm_triggered = false; // Estado do alarme (se disparado ou não)
 
 uint16_t last_mic_value = 0; // Variável para armazenar a última leitura do microfone
-
 
 // Função para iniciar os pinos GPIO
 void init_gpio() {
@@ -159,8 +163,51 @@ void update_display() {
     ssd1306_send_data(&ssd);
 }
 
+// Função para converter a intensidade de cada canal G, R, B em 24 bits
+uint32_t matrix_rgb(double g, double r, double b) {
+    unsigned char G = (unsigned char)(g * 255.0);
+    unsigned char R = (unsigned char)(r * 255.0);
+    unsigned char B = (unsigned char)(b * 255.0);
+
+    return ( (uint32_t)G << 24 ) |
+           ( (uint32_t)R << 16 ) |
+           ( (uint32_t)B <<  8 );
+}
+
+void clear_all_leds() {
+    for (int i = 0; i < NUM_LEDS; i++) {
+        pio_sm_put_blocking(pio, sm, 0); // Desliga todos os LEDs
+    }
+}
+
+// Envia UM quadro (25 pixels)
+static void draw_frame(const uint32_t frame[NUM_LEDS]) {
+    for (int i = 0; i < NUM_LEDS; i++) {
+        pio_sm_put_blocking(pio, sm, frame[i]);
+    }
+    sleep_us(80); // Pausa para garantir que os LEDs processam os dados
+}
+
+// Roda uma animação de `num_frames` quadros; cada quadro tem 25 LEDs.
+void run_animation(const uint32_t frames[][NUM_LEDS], int num_frames, int delay_ms) {
+    for (int i = 0; i < num_frames; i++) {
+        draw_frame(frames[i]); // Envia o quadro atual
+        sleep_ms(delay_ms);    // Espera o tempo especificado antes do próximo quadro
+    }
+}
+
+void update_matrix_leds() {
+    if (pwm_enabled) {
+        clear_all_leds();
+        return;
+    } else {
+        animation_alarm_off();
+    }
+}
+
 void play_siren() {
     alarm_triggered = true;
+    clear_all_leds();
     update_display();
     const uint16_t levels[] = {WRAP_VALUE, 3000, 2000, 1000, 500, 1000, 2000, 3000, WRAP_VALUE, 0};
     const uint16_t buzz_levels[] = {WRAP_VALUE / 2, WRAP_VALUE / 4, WRAP_VALUE / 6, WRAP_VALUE / 8,
@@ -170,13 +217,21 @@ void play_siren() {
     pwm_set_gpio_level(LED_GREEN, 0);
 
     while (alarm_triggered) {
+        animation_alarm_triggered();
         for (int i = 0; i < 10 && alarm_triggered; i++) {
             pwm_set_gpio_level(BUZZER_A, buzz_levels[i]);
             pwm_set_gpio_level(BUZZER_B, buzz_levels[i]);
             pwm_set_gpio_level(LED_RED, levels[i]);
+            
             sleep_ms(50);
         }
     }
+
+     // Desliga LEDs e buzzers após o alarme ser interrompido
+     pwm_set_gpio_level(BUZZER_A, 0);
+     pwm_set_gpio_level(BUZZER_B, 0);
+     pwm_set_gpio_level(LED_RED, 0);
+     clear_all_leds();
 }
 
 // Callback para interrupções dos botões
@@ -197,9 +252,6 @@ void button_irq_handler(uint gpio, uint32_t events) {
             last_press_time_B = current_time;  // Atualiza o tempo da última pressão
             if (alarm_triggered) {
                 alarm_triggered = false; // Desativa o alarme
-                pwm_set_gpio_level(LED_RED, 0);
-                pwm_set_gpio_level(BUZZER_A, 0);
-                pwm_set_gpio_level(BUZZER_B, 0);
                 update_display();
             }
         }
@@ -221,6 +273,11 @@ int main() {
     ssd1306_send_data(&ssd);
     update_display();
 
+     // Inicializa o PIO (ws2812_program)
+     uint offset = pio_add_program(pio, &ws2812_program);
+     sm = pio_claim_unused_sm(pio, true);
+     ws2812_program_init(pio, sm, offset, MATRIX_PIN);
+
     // Configura as interrupções para os botões
     gpio_set_irq_enabled_with_callback(BUTTON_A, GPIO_IRQ_EDGE_FALL, true, &button_irq_handler);
     gpio_set_irq_enabled_with_callback(BUTTON_B, GPIO_IRQ_EDGE_FALL, true, &button_irq_handler);
@@ -235,5 +292,6 @@ int main() {
         } else if (!alarm_triggered) {
             set_led_intensity(last_mic_value);
         }
+        update_matrix_leds();
     }
 }
