@@ -43,49 +43,70 @@ void animation_alarm_off() {
 }
 
 void animation_alarm_triggered() {
-    uint32_t alarm_frames[6][25] = {
+    uint32_t alarm_frames[9][25] = {
         {
-            matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), 
-            matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0),
-            matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0),
-            matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0),
-            matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0), matrix_rgb(0, 0.6, 0)
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), 
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0)
         },
         {
-            matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), 
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), 
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0)
+        },
+        {
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), 
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0)
+        },
+        {
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), 
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0)
+        },
+        {
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), 
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
+            matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0)
+        },
+        {
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), 
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
+            matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
+            matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0)
+        },
+        {
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), 
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
+            matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
             matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
+            matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0)
+        },
+        {
+            matrix_rgb(0, 0.05, 0), matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), 
+            matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
             matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
             matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
             matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0)
         },
         {
-            matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), 
-            matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0),
-            matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0),
-            matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0),
-            matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0)
-        },
-        {
-            matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), 
-            matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0),
-            matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0),
-            matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0),
-            matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0), matrix_rgb(0, 0.08, 0)
-        },
-        {
-            matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), 
-            matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0),
-            matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0),
-            matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0),
-            matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0), matrix_rgb(0, 0.2, 0)
-        },
-        {
-            matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), 
+            matrix_rgb(0, 0.8, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), 
             matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
             matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
             matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0),
             matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0), matrix_rgb(0, 0.4, 0)
         }
     };
-    run_animation(alarm_frames, 6, 50);
+    run_animation(alarm_frames, 9, 30);
 }

@@ -3,7 +3,7 @@
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "hardware/pio.h"
-#include "hardware/timer.h"
+#include "hardware/timer.h" //
 #include "hardware/adc.h"
 #include "hardware/pwm.h"
 #include "ws2812.pio.h"
@@ -207,7 +207,6 @@ void update_matrix_leds() {
 
 void play_siren() {
     alarm_triggered = true;
-    clear_all_leds();
     update_display();
     const uint16_t levels[] = {WRAP_VALUE, 3000, 2000, 1000, 500, 1000, 2000, 3000, WRAP_VALUE, 0};
     const uint16_t buzz_levels[] = {WRAP_VALUE / 2, WRAP_VALUE / 4, WRAP_VALUE / 6, WRAP_VALUE / 8,
@@ -226,12 +225,11 @@ void play_siren() {
             sleep_ms(50);
         }
     }
-
-     // Desliga LEDs e buzzers após o alarme ser interrompido
-     pwm_set_gpio_level(BUZZER_A, 0);
-     pwm_set_gpio_level(BUZZER_B, 0);
-     pwm_set_gpio_level(LED_RED, 0);
-     clear_all_leds();
+    // Desliga LEDs e buzzers após o alarme ser interrompido
+    pwm_set_gpio_level(BUZZER_A, 0);
+    pwm_set_gpio_level(BUZZER_B, 0);
+    pwm_set_gpio_level(LED_RED, 0);
+    clear_all_leds();
 }
 
 // Callback para interrupções dos botões
@@ -243,6 +241,7 @@ void button_irq_handler(uint gpio, uint32_t events) {
             last_press_time_A = current_time;  // Atualiza o tempo da última pressão
 
             pwm_enabled = !pwm_enabled; // Alterna o estado do PWM
+            clear_all_leds();
             update_display();
             printf("Botão A pressionado. Sistema Ativo: %d\n", pwm_enabled);
         }
@@ -292,6 +291,7 @@ int main() {
         } else if (!alarm_triggered) {
             set_led_intensity(last_mic_value);
         }
+        update_display(); // Atualiza a tela com cada leitura do microfone
         update_matrix_leds();
     }
 }
