@@ -3,7 +3,7 @@
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 #include "hardware/pio.h"
-#include "hardware/timer.h" //
+#include "hardware/timer.h"
 #include "hardware/adc.h"
 #include "hardware/pwm.h"
 #include "ws2812.pio.h"
@@ -143,16 +143,30 @@ void set_led_intensity(uint16_t mic_value) {
     }
 }
 
+// Função para obter a hora atual e formatá-la como string
+void get_time_string(char *buffer, size_t buffer_size) {
+    absolute_time_t current_time = get_absolute_time();
+    uint64_t time_us = to_us_since_boot(current_time); // Converte o tempo absoluto para microssegundos
+    uint32_t seconds = (time_us / 1000000) % 60;
+    uint32_t minutes = (time_us / (1000000 * 60)) % 60;
+    uint32_t hours = (time_us / (1000000LL * 60 * 60)) % 24;
+    snprintf(buffer, buffer_size, "%02d:%02d:%02d", hours, minutes, seconds);
+}
+
 void update_display() {
     char mic_value_str[16];
+    char time_str[16];
     snprintf(mic_value_str, sizeof(mic_value_str), "MIC: %d", last_mic_value);
-
+    get_time_string(time_str, sizeof(time_str));
+    
     ssd1306_fill(&ssd, false);
     ssd1306_draw_string(&ssd, "SYSTEM STATUS:", 8, 5);
     ssd1306_draw_string(&ssd, "---------------", 4, 12);
     if (alarm_triggered) {
-        ssd1306_draw_string(&ssd, "ALARME", 37, 30);
-        ssd1306_draw_string(&ssd, "DISPARADO!", 26, 40);
+        ssd1306_draw_string(&ssd, "ALARME", 37, 26);
+        ssd1306_draw_string(&ssd, "DISPARADO!", 26, 36);
+        ssd1306_draw_string(&ssd, "---------------", 4, 46);
+        ssd1306_draw_string(&ssd, time_str, 30, 55); // Exibe a hora do disparo
     } else if (pwm_enabled) {
         ssd1306_draw_string(&ssd, "ALARME: ON", 20, 30);
         ssd1306_draw_string(&ssd, "---------------", 4, 45);
@@ -232,6 +246,13 @@ void play_siren() {
     clear_all_leds();
 }
 
+void reset_display() {
+    ssd1306_config(&ssd); // Reconfigura o display
+    ssd1306_fill(&ssd, false);
+    ssd1306_send_data(&ssd);
+    update_display();
+}
+
 // Callback para interrupções dos botões
 void button_irq_handler(uint gpio, uint32_t events) {
     uint32_t current_time = to_us_since_boot(get_absolute_time());
@@ -242,7 +263,7 @@ void button_irq_handler(uint gpio, uint32_t events) {
 
             pwm_enabled = !pwm_enabled; // Alterna o estado do PWM
             clear_all_leds();
-            update_display();
+            reset_display();
             printf("Botão A pressionado. Sistema Ativo: %d\n", pwm_enabled);
         }
     } 
@@ -251,7 +272,8 @@ void button_irq_handler(uint gpio, uint32_t events) {
             last_press_time_B = current_time;  // Atualiza o tempo da última pressão
             if (alarm_triggered) {
                 alarm_triggered = false; // Desativa o alarme
-                update_display();
+                reset_display();
+                printf("Botão B pressionado. Alarme Desativado\n");
             }
         }
     }
