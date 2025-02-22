@@ -98,7 +98,7 @@ Além disso, o sistema registra o **horário do disparo do alarme**, com base no
 
 ## 📊 **Vídeo Demonstrativo do Projeto**  
 
-📸 O video vai estar aqui
+📹 **[Link para acessar o vídeo demonstrativo do projeto](https://drive.google.com/file/d/1Ya6SjHECfObIo5NIXUbTYfqO7XaALwYh/view?usp=drivesdk)**
 
 ---
 
