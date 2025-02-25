@@ -264,7 +264,7 @@ void button_irq_handler(uint gpio, uint32_t events) {
             pwm_enabled = !pwm_enabled; // Alterna o estado do PWM
             clear_all_leds();
             reset_display();
-            printf("Botão A pressionado. Sistema Ativo: %d\n", pwm_enabled);
+            printf("Botão A pressionado. Sistema: %d\n", pwm_enabled);
         }
     } 
     else if (gpio == BUTTON_B) { // Desliga o alarme depois que foi disparado
